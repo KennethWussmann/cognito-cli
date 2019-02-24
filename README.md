@@ -16,7 +16,7 @@ Small CLI tool to obtain a JWT from a Cognito userpool. Supports multiple userpo
 
 **Shows available stages for this application**
 ```
-? What pool type would you like to use? Driver
+? What pool type would you like to use? Application 1
 ? And for what stage?
   dev
 ❯ int
