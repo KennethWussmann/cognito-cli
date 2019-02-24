@@ -1,0 +1,46 @@
+{
+    "pools": [
+        {
+            "name": "Application 1",
+            "dev": {
+                "poolId": "eu-central-1_ABC123456",
+                "clientId": "123456789123456789",
+                "username": "username",
+                "password": "fooBar123"
+            },
+            "int": {
+                "poolId": "eu-central-1_ABC123456",
+                "clientId": "123456789123456789",
+                "username": "username",
+                "password": "fooBar123"
+            },
+            "prd": {
+                "poolId": "eu-central-1_ABC123456",
+                "clientId": "123456789123456789",
+                "username": "username",
+                "password": "fooBar123"
+            }
+        },
+        {
+            "name": "Application 2",
+            "dev": {
+                "poolId": "eu-central-1_ABC123456",
+                "clientId": "123456789123456789",
+                "username": "username",
+                "password": "fooBar123"
+            },
+            "int": {
+                "poolId": "eu-central-1_ABC123456",
+                "clientId": "123456789123456789",
+                "username": "username",
+                "password": "fooBar123"
+            },
+            "prd": {
+                "poolId": "eu-central-1_ABC123456",
+                "clientId": "123456789123456789",
+                "username": "username",
+                "password": "fooBar123"
+            }
+        }
+    ]
+}
