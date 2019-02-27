@@ -79,4 +79,13 @@ Copied JWT for Application 1 INT to clipboard!
 
 ### Running with commands
 This CLI tool also allows the following arguments:
-**TODO**
+```
+Usage: cognito [options]
+
+Options:
+  -V, --version        output the version number
+  -p, --pool [name]    Use the pool by [name]
+  -s, --stage [stage]  Use the [stage]
+  -c, --copy           Copy the token directly to clipboard
+  -h, --help           output usage information
+```
