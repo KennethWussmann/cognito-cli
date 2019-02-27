@@ -77,7 +77,7 @@ When you run just `cognito` without args you will be prompted with all possible 
 Copied JWT for Application 1 INT to clipboard!
 ```
 
-### Running with commands
+### Running with arguments
 This CLI tool also allows the following arguments:
 ```
 Usage: cognito [options]
