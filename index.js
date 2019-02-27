@@ -42,44 +42,48 @@ function promptPoolType() {
             type: "list",
             name: "poolType",
             message: "What pool type would you like to use?",
-            choices: config.pools.map(pools => pools.name)
+            choices: getAvailablePoolNames()
         })
         .then(poolTypeAnswers => {
-            promptStage(poolTypeAnswers);
+            promptStage(poolTypeAnswers.poolType);
         });
 }
 
-function promptStage(poolTypeAnswers) {
-    var pool = config.pools.filter(pools => pools.name == poolTypeAnswers.poolType)[0];
-    var stages = Object.keys(pool).filter(key => key != "name");
-
+function promptStage(poolName) {
     inquirer
         .prompt({
             type: "list",
             name: "stage",
             message: "And for what stage?",
-            choices: stages
+            choices: getAvailableStages(poolName)
         })
         .then(stageAnswers => {
-            var stage = pool[stageAnswers.stage];
-            auth(stage)
-                .catch(err => {
-                    console.error(`\nFailed to get JWT: ${err.code} - ${err.message}`);
-                })
+            auth(getStage(poolName, stageAnswers.stage))
                 .then(jwt => {
                     if (jwt != null) {
                         console.log(`\n${jwt}`);
                         ncp.copy(jwt, () => {
-                            console.log(`\nCopied JWT for ${poolTypeAnswers.poolType} ${stageAnswers.stage.toUpperCase()} to clipboard!`);
+                            console.log(`\nCopied JWT for ${poolName} ${stageAnswers.stage.toUpperCase()} to clipboard!`);
                         });
                     }
+                })
+                .catch(err => {
+                    console.error(`\nFailed to get JWT: ${err.code} - ${err.message}`);
                 });
         });
 }
 
+function getAvailablePoolNames() {
+    return config.pools.map(pools => pools.name);
+}
 
+function getAvailableStages(poolName) {
+    return Object.keys(config.pools.filter(pools => pools.name == poolName)[0]).filter(key => key != "name");
+}
 
-
+function getStage(poolName, stageName) {
+    return config.pools.filter(pools => pools.name == poolName)[0][stageName];
+}
 
 function auth(stage) {
     return new Promise((resolve, reject) => {
