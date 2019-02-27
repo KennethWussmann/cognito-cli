@@ -14,6 +14,34 @@ var config = require(configFolderPath + configFileName);
 if (process.argv.length <= 2) {
     promptPoolType();
 } else {
+    parseCliArguments();
+}
+
+function initEnvironment() {
+    if (!fs.existsSync(configFolderPath)) {
+        fs.mkdirSync(configFolderPath);
+    }
+    if (!fs.existsSync(configFolderPath + configFileName)) {
+        fs.writeFileSync(configFolderPath + configFileName, JSON.stringify({
+            pools: [
+                {
+                    name: "Example",
+                    dev: {
+                        poolId: "eu-west-1_1234567",
+                        clientId: "abc123456",
+                        username: "user",
+                        password: "passwd"
+                    }
+                }
+            ]
+        }, null, 4));
+        console.log(`\n\nCreated default configuration file at "${configFolderPath + configFileName}"`);
+        console.log("Use the global command 'cognito' to generate fresh JWT tokens.\n\n");
+        process.exit(0);
+    }
+}
+
+function parseCliArguments() {
     var cli = require("commander");
 
     cli.version("1.0.0")
@@ -40,30 +68,6 @@ if (process.argv.length <= 2) {
             console.log(jwt);
         })
         .catch(err => printAWSError(err));
-}
-
-function initEnvironment() {
-    if (!fs.existsSync(configFolderPath)) {
-        fs.mkdirSync(configFolderPath);
-    }
-    if (!fs.existsSync(configFolderPath + configFileName)) {
-        fs.writeFileSync(configFolderPath + configFileName, JSON.stringify({
-            pools: [
-                {
-                    name: "Example",
-                    dev: {
-                        poolId: "eu-west-1_1234567",
-                        clientId: "abc123456",
-                        username: "user",
-                        password: "passwd"
-                    }
-                }
-            ]
-        }, null, 4));
-        console.log(`\n\nCreated default configuration file at "${configFolderPath + configFileName}"`);
-        console.log("Use the global command 'cognito' to generate fresh JWT tokens.\n\n");
-        process.exit(0);
-    }
 }
 
 function promptPoolType() {
