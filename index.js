@@ -1,11 +1,40 @@
+#!/usr/bin/env node
+
 "use strict";
+var fs = require('fs');
 var ncp = require("copy-paste");
 var inquirer = require("inquirer");
-var config = require("./config.json");
 
-console.log("");
+var configFolderPath = process.env.HOME + "/.cognito-cli/";
+var configFileName = "config.json";
 
+initEnvironment()
+var config = require(configFolderPath + configFileName);
 promptPoolType();
+
+function initEnvironment() {
+    if (!fs.existsSync(configFolderPath)) {
+        fs.mkdirSync(configFolderPath);
+    }
+    if (!fs.existsSync(configFolderPath + configFileName)) {
+        fs.writeFileSync(configFolderPath + configFileName, JSON.stringify({
+            pools: [
+                {
+                    name: "Example",
+                    dev: {
+                        poolId: "eu-west-1_1234567",
+                        clientId: "abc123456",
+                        username: "user",
+                        password: "passwd"
+                    }
+                }
+            ]
+        }, null, 4));
+        console.log(`\n\nCreated default configuration file at "${configFolderPath + configFileName}"`);
+        console.log("Use the global command 'cognito' to generate fresh JWT tokens.\n\n");
+        process.exit();
+    }
+}
 
 function promptPoolType() {
     inquirer

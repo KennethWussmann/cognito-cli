@@ -2,10 +2,59 @@
 Small CLI tool to obtain a JWT from a Cognito userpool. Supports multiple userpools ordered by stages.
 
 # Usage
-* Clone repo & `npm install`
-* Rename `example.config.json` to `config.json`
-* Provide credentials in the config.json
-* `npm start`
+* Clone repo & `npm install -g`
+* New config will be created at `~/.cognito-cli/config.json`
+* Provide credentials in the config file
+* Run the global command `cognito`
+
+## Configuration
+This is the example `~/.cognito-cli/config.json`:
+```JSON
+{
+    "pools": [
+        {
+            "name": "Example",
+            "dev": {
+                "poolId": "eu-west-1_1234567",
+                "clientId": "abc123456",
+                "username": "user",
+                "password": "passwd"
+            }
+        }
+    ]
+}
+```
+You can add as many `pools` with `stages`. Example:
+```JSON
+{
+    "pools": [
+        {
+            "name": "Application 1",
+            "test123": {
+                "poolId": "eu-west-1_1234567",
+                "clientId": "abc123456",
+                "username": "user",
+                "password": "passwd"
+            }
+        },
+        {
+            "name": "Something else",
+            "hello": {
+                "poolId": "eu-west-1_1234567",
+                "clientId": "abc123456",
+                "username": "user",
+                "password": "passwd"
+            }
+        }
+    ]
+}
+```
+
+## CLI
+You can run the global command `cognito`.
+
+### Running without arguments
+When you run just `cognito` without args you will be prompted with all possible pools & stages:
 
 **Shows list of applications configured**
 ```
@@ -27,3 +76,7 @@ Small CLI tool to obtain a JWT from a Cognito userpool. Supports multiple userpo
 ```
 Copied JWT for Application 1 INT to clipboard!
 ```
+
+### Running with commands
+This CLI tool also allows the following arguments:
+**TODO**

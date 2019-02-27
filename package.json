@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "install": "node index.js"
+  },
+  "bin": {
+    "cognito": "./index.js"
   },
   "author": "",
   "license": "ISC",
