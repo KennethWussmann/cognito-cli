@@ -4,6 +4,7 @@
 var fs = require("fs");
 var ncp = require("copy-paste");
 var inquirer = require("inquirer");
+var express = require('express');
 
 var configFolderPath = process.env.HOME + "/.cognito-cli/";
 var configFileName = "config.json";
@@ -23,17 +24,15 @@ function initEnvironment() {
     }
     if (!fs.existsSync(configFolderPath + configFileName)) {
         fs.writeFileSync(configFolderPath + configFileName, JSON.stringify({
-            pools: [
-                {
-                    name: "Example",
-                    dev: {
-                        poolId: "eu-west-1_1234567",
-                        clientId: "abc123456",
-                        username: "user",
-                        password: "passwd"
-                    }
+            pools: [{
+                name: "Example",
+                dev: {
+                    poolId: "eu-west-1_1234567",
+                    clientId: "abc123456",
+                    username: "user",
+                    password: "passwd"
                 }
-            ]
+            }]
         }, null, 4));
         console.log(`\n\nCreated default configuration file at "${configFolderPath + configFileName}"`);
         console.log("Use the global command 'cognito' to generate fresh JWT tokens.\n\n");
@@ -48,16 +47,22 @@ function parseCliArguments() {
         .option(`-p, --pool [name]`, "Use the pool by [name]")
         .option(`-s, --stage [stage]`, "Use the [stage]")
         .option(`-c, --copy`, "Copy the token directly to clipboard")
+        .option(`-S, --server [port]`, "Start a local webserver that can serve tokens")
         .parse(process.argv);
-    
+
+    if (cli.server) {
+        webserver(cli.server)
+        return;
+    }
+
     if (!isPoolName(cli.pool)) {
-       console.error("Pool not found in configuration");
-       process.exit(1);
+        console.error("Pool not found in configuration");
+        process.exit(1);
     }
 
     if (!isStageName(cli.pool, cli.stage)) {
-       console.error("Stage for pool not found in configuration");
-       process.exit(1);
+        console.error("Stage for pool not found in configuration");
+        process.exit(1);
     }
 
     auth(getStage(cli.pool, cli.stage))
@@ -129,7 +134,9 @@ function getAvailableStages(poolName) {
 }
 
 function getStage(poolName, stageName) {
-    return config.pools.filter(pools => pools.name.toLowerCase() == poolName.toLowerCase())[0][stageName];
+    var pool = config.pools.filter(pools => pools.name.toLowerCase() == poolName.toLowerCase())[0];
+    var stage = Object.keys(pool).filter(stg => stg.toLowerCase() == stageName.toLowerCase());
+    return pool[stage];
 }
 
 function auth(stage) {
@@ -157,5 +164,28 @@ function auth(stage) {
                 message: "Password needs to be changed!"
             }),
         });
+    });
+}
+
+function webserver(port) {
+    if (port === true) {
+        port = 8080
+    }
+
+    var app = express();
+
+    app.get("/:pool/:stage", function (req, res) {
+        var stage = req.params["stage"];
+        var pool = req.params["pool"];
+        
+        auth(getStage(pool, stage))
+            .then(jwt => {
+                res.json({ token: jwt });
+            })
+            .catch(err => printAWSError(err));
+    });
+
+    app.listen(port, function () {
+        console.log(`Started local webserver: http://localhost:${port}/{pool}/{stage}`);
     });
 }

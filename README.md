@@ -87,5 +87,20 @@ Options:
   -p, --pool [name]    Use the pool by [name]
   -s, --stage [stage]  Use the [stage]
   -c, --copy           Copy the token directly to clipboard
+  -S, --server [port]  Start a local webserver that can serve tokens
   -h, --help           output usage information
 ```
+
+### Local webserver
+Using `cognito -S` will start a local webserver (default on port 8080) that can be used to retrieve a JWT token for pool & stage.
+The webserver has the following endpoint:
+* `GET /{pool}/{stage}` - Get a fresh JWT token (no caching!)
+
+#### Examples
+```
+$ curl -X GET http://localhost:8080/backoffice/dev
+{
+  "token": "eyJra..."
+}
+```
+Thats useful for example in REST clients like Insomnia or Postman to chain requests: Get Token -> Post something.
