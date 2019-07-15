@@ -98,7 +98,7 @@ The webserver has the following endpoint:
 
 #### Examples
 ```
-$ curl -X GET http://localhost:8080/backoffice/dev
+$ curl -X GET http://localhost:8080/example/dev
 {
   "token": "eyJra..."
 }
