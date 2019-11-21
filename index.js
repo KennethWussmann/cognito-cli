@@ -12,11 +12,25 @@ var configFileName = "config.json";
 initEnvironment()
 var config = require(configFolderPath + configFileName);
 
-if (process.argv.length <= 2) {
-    promptPoolType();
-} else {
-    parseCliArguments();
-}
+(async () => {
+    if (process.argv.length <= 2) {
+        promptPoolType().then(poolName => promptStage(poolName).then(stageName => {
+            let stage = getStage(poolName, stageName);
+            auth(stage)
+                .then(jwt => {
+                    if (jwt != null) {
+                        console.log(`\n${jwt}`);
+                        ncp.copy(jwt, () => {
+                            console.log(`\nCopied JWT for ${poolName} ${stageName.toUpperCase()} to clipboard!`);
+                        });
+                    }
+                })
+                .catch(err => printAWSError(err))
+        }));
+    } else {
+        await parseCliArguments();
+    }
+})();
 
 function initEnvironment() {
     if (!fs.existsSync(configFolderPath)) {
@@ -40,7 +54,7 @@ function initEnvironment() {
     }
 }
 
-function parseCliArguments() {
+async function parseCliArguments() {
     var cli = require("commander");
 
     cli.version("1.0.0")
@@ -51,8 +65,21 @@ function parseCliArguments() {
         .parse(process.argv);
 
     if (cli.server) {
-        webserver(cli.server)
+        webserver(cli.server);
         return;
+    }
+
+    if (!cli.pool && !cli.stage) {
+        console.error("Please specify either a pool or a stage. See --help for help.");
+        process.exit(1);
+    }
+
+    if (!cli.pool) {
+        await promptPoolType().then(poolName => cli.pool = poolName.toLowerCase());
+    }
+
+    if (!cli.stage) {
+        await promptStage(cli.pool).then(stageName => cli.stage = stageName.toLowerCase());
     }
 
     if (!isPoolName(cli.pool)) {
@@ -75,39 +102,40 @@ function parseCliArguments() {
         .catch(err => printAWSError(err));
 }
 
-function promptPoolType() {
-    inquirer
-        .prompt({
-            type: "list",
-            name: "poolType",
-            message: "What pool type would you like to use?",
-            choices: getAvailablePoolNames()
-        })
-        .then(poolTypeAnswers => {
-            promptStage(poolTypeAnswers.poolType);
-        });
+async function promptPoolType() {
+    return new Promise((resolve, reject) => {
+        inquirer
+            .prompt({
+                type: "list",
+                name: "poolType",
+                message: "What pool type would you like to use?",
+                choices: getAvailablePoolNames()
+            })
+            .then(poolTypeAnswers => {
+                resolve(poolTypeAnswers.poolType);
+            })
+            .catch(err => {
+                reject(err);
+            });
+    });
 }
 
 function promptStage(poolName) {
-    inquirer
-        .prompt({
-            type: "list",
-            name: "stage",
-            message: "And for what stage?",
-            choices: getAvailableStages(poolName)
-        })
-        .then(stageAnswers => {
-            auth(getStage(poolName, stageAnswers.stage))
-                .then(jwt => {
-                    if (jwt != null) {
-                        console.log(`\n${jwt}`);
-                        ncp.copy(jwt, () => {
-                            console.log(`\nCopied JWT for ${poolName} ${stageAnswers.stage.toUpperCase()} to clipboard!`);
-                        });
-                    }
-                })
-                .catch(err => printAWSError(err));
-        });
+    return new Promise((resolve, reject) => {
+        inquirer
+            .prompt({
+                type: "list",
+                name: "stage",
+                message: "And for what stage?",
+                choices: getAvailableStages(poolName)
+            })
+            .then(stageAnswers => {
+                resolve(stageAnswers.stage);
+            })
+            .catch(err => {
+                reject(err);
+            });
+    });
 }
 
 function printAWSError(err) {
@@ -116,11 +144,11 @@ function printAWSError(err) {
 }
 
 function isPoolName(poolName) {
-    return getAvailablePoolNames().map(name => name.toLowerCase()).includes(poolName);
+    return getAvailablePoolNames().map(name => name.toLowerCase()).includes(poolName.toLowerCase());
 }
 
 function isStageName(poolName, stageName) {
-    return getAvailableStages(poolName).map(name => name.toLowerCase()).includes(stageName);
+    return getAvailableStages(poolName).map(name => name.toLowerCase()).includes(stageName.toLowerCase());
 }
 
 function getAvailablePoolNames() {
@@ -177,10 +205,12 @@ function webserver(port) {
     app.get("/:pool/:stage", function (req, res) {
         var stage = req.params["stage"];
         var pool = req.params["pool"];
-        
+
         auth(getStage(pool, stage))
             .then(jwt => {
-                res.json({ token: jwt });
+                res.json({
+                    token: jwt
+                });
             })
             .catch(err => printAWSError(err));
     });
