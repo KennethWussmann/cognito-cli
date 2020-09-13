@@ -2,7 +2,7 @@
 Small CLI tool to obtain a JWT from a Cognito userpools. Supports multiple userpools ordered by stages and MFA.
 
 # Usage
-* Clone repo & `npm install -g`
+* Install globally `npm install -g cogcli`
 * New config will be created at `~/.cognito-cli/config.json`
 * Provide credentials in the config file
 * Run the global command `cognito`
