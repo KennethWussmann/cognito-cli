@@ -12,6 +12,10 @@
   },
   "author": "Kenneth Wussmann",
   "license": "MIT",
+  "homepage": "https://github.com/KennethWussmann/cognito-cli",
+  "bugs": {
+    "url": "https://github.com/KennethWussmann/cognito-cli/issues"
+  },
   "dependencies": {
     "aws-amplify": "^3.2.0",
     "commander": "^6.1.0",
