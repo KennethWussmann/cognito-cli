@@ -1,5 +1,5 @@
 # Cognito CLI
-Small CLI tool to obtain a JWT from a Cognito userpool. Supports multiple userpools ordered by stages.
+Small CLI tool to obtain a JWT from a Cognito userpools. Supports multiple userpools ordered by stages and MFA.
 
 # Usage
 * Clone repo & `npm install -g`
@@ -18,7 +18,8 @@ This is the example `~/.cognito-cli/config.json`:
                 "poolId": "eu-west-1_1234567",
                 "clientId": "abc123456",
                 "username": "user",
-                "password": "passwd"
+                "password": "passwd",
+                "otpSecret": "OPTIONAL_OTPSECRET"
             }
         }
     ]
@@ -34,7 +35,8 @@ You can add as many `pools` with `stages`. Example:
                 "poolId": "eu-west-1_1234567",
                 "clientId": "abc123456",
                 "username": "user",
-                "password": "passwd"
+                "password": "passwd",
+                "otpSecret": "OPTIONAL_OTPSECRET"
             }
         },
         {
@@ -49,6 +51,12 @@ You can add as many `pools` with `stages`. Example:
     ]
 }
 ```
+
+## MFA Support
+When the Cognito user requires MFA login:
+* You can supply the OTP secret which can be used to generate a token in the config via `otpSecret`
+* If no `otpSecret` present you will be prompted to enter the token manually
+* You can also use `--token 123456` to supply the token directly 
 
 ## CLI
 You can run the global command `cognito`.
@@ -88,7 +96,8 @@ Options:
   -s, --stage [stage]  Use the [stage]
   -c, --copy           Copy the token directly to clipboard
   -S, --server [port]  Start a local webserver that can serve tokens
-  -h, --help           output usage information
+  -t, --token [token]  Token for MFA challenge
+  -h, --help           display help for command
 ```
 
 ### Local webserver

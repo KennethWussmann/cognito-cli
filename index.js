@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 
 "use strict";
-var fs = require("fs");
-var ncp = require("copy-paste");
-var inquirer = require("inquirer");
-var express = require('express');
+const fs = require("fs");
+const ncp = require("copy-paste");
+const inquirer = require("inquirer");
+const express = require('express');
+const otplib = require('otplib');
+const Auth = require("aws-amplify").Auth;
 
-var configFolderPath = process.env.HOME + "/.cognito-cli/";
-var configFileName = "config.json";
+const configFolderPath = process.env.HOME + "/.cognito-cli/";
+const configFileName = "config.json";
 
 initEnvironment()
-var config = require(configFolderPath + configFileName);
+const config = require(configFolderPath + configFileName);
 
 (async () => {
     if (process.argv.length <= 2) {
@@ -42,9 +44,11 @@ function initEnvironment() {
                 name: "Example",
                 dev: {
                     poolId: "eu-west-1_1234567",
+                    region: "eu-west-1",
                     clientId: "abc123456",
                     username: "user",
-                    password: "passwd"
+                    password: "passwd",
+                    otpSecret: null
                 }
             }]
         }, null, 4));
@@ -62,6 +66,7 @@ async function parseCliArguments() {
         .option(`-s, --stage [stage]`, "Use the [stage]")
         .option(`-c, --copy`, "Copy the token directly to clipboard")
         .option(`-S, --server [port]`, "Start a local webserver that can serve tokens")
+        .option(`-t, --token [token]`, "Token for MFA challenge")
         .parse(process.argv);
 
     if (cli.server) {
@@ -92,7 +97,7 @@ async function parseCliArguments() {
         process.exit(1);
     }
 
-    auth(getStage(cli.pool, cli.stage))
+    auth(getStage(cli.pool, cli.stage), cli.token)
         .then(jwt => {
             if (cli.copy) {
                 ncp.copy(jwt);
@@ -156,43 +161,47 @@ function getAvailablePoolNames() {
 }
 
 function getAvailableStages(poolName) {
-    var pool = config.pools.filter(pools => pools.name.toLowerCase() == poolName.toLowerCase())[0];
+    const pool = config.pools.filter(pools => pools.name.toLowerCase() === poolName.toLowerCase())[0];
     return Object.keys(pool)
-        .filter(key => key != "name");
+        .filter(key => key !== "name");
 }
 
 function getStage(poolName, stageName) {
-    var pool = config.pools.filter(pools => pools.name.toLowerCase() == poolName.toLowerCase())[0];
-    var stage = Object.keys(pool).filter(stg => stg.toLowerCase() == stageName.toLowerCase());
+    const pool = config.pools.filter(pools => pools.name.toLowerCase() === poolName.toLowerCase())[0];
+    const stage = Object.keys(pool).filter(stg => stg.toLowerCase() === stageName.toLowerCase());
     return pool[stage];
 }
 
-function auth(stage) {
-    return new Promise((resolve, reject) => {
-        global.fetch = require("node-fetch")
-        var AmazonCognitoIdentity = require("amazon-cognito-identity-js");
-        var cognitoUser = new AmazonCognitoIdentity.CognitoUser({
-            Username: stage.username,
-            Pool: new AmazonCognitoIdentity.CognitoUserPool({
-                UserPoolId: stage.poolId,
-                ClientId: stage.clientId
-            })
-        });
-        cognitoUser.authenticateUser(new AmazonCognitoIdentity.AuthenticationDetails({
-            Username: stage.username,
-            Password: stage.password,
-        }), {
-            onSuccess: (result) => {
-                var accessToken = result.getAccessToken().getJwtToken();
-                var idToken = result.idToken.jwtToken;
-                resolve(idToken);
-            },
-            onFailure: (err) => reject(err),
-            newPasswordRequired: (err) => reject({
-                message: "Password needs to be changed!"
-            }),
-        });
+async function auth(stage, cliToken) {
+    await Auth.configure({
+        region: stage.region ?? 'eu-central-1',
+        userPoolId: stage.poolId,
+        userPoolWebClientId: stage.clientId,
     });
+    const user = await Auth.signIn(stage.username, stage.password)
+    if (user.challengeName === 'SOFTWARE_TOKEN_MFA') {
+        let token = cliToken;
+        if (cliToken == null) {
+            if (!stage.otpSecret) {
+                token = await promptMfaToken();
+            } else {
+                token = otplib.totp.generate(stage.otpSecret);
+            }
+        }
+        await Auth.confirmSignIn(user, token, user.challengeName);
+    }
+    const response = await Auth.currentSession();
+    return response.getIdToken().getJwtToken();
+}
+
+async function promptMfaToken() {
+    return await inquirer
+        .prompt({
+            type: "input",
+            name: "mfaToken",
+            message: "Please enter MFA token",
+            choices: getAvailablePoolNames()
+        }).mfaToken;
 }
 
 function webserver(port) {
