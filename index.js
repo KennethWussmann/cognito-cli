@@ -209,13 +209,14 @@ function webserver(port) {
         port = 8080
     }
 
-    var app = express();
+    const app = express();
 
     app.get("/:pool/:stage", function (req, res) {
-        var stage = req.params["stage"];
-        var pool = req.params["pool"];
+        const stage = req.params["stage"];
+        const pool = req.params["pool"];
+        const token = req.query.token
 
-        auth(getStage(pool, stage))
+        auth(getStage(pool, stage), token)
             .then(jwt => {
                 res.json({
                     token: jwt
