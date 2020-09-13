@@ -14,12 +14,12 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - uses: actions/setup-node@v1
       with:
-        node-version: '12.x'
+        node-version: '14.x'
         registry-url: 'https://registry.npmjs.org'
     - run: npm install
     - name: Set version
       run: npm --no-git-tag-version version ${{ steps.get_version.outputs.VERSION }}
-    - name: Publishing CLI ${{ steps.get_version.outputs.VERSION }}
+    - name: Publishing CLI
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
