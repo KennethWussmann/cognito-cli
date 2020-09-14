@@ -237,7 +237,13 @@ function webserver(port) {
                     token: jwt
                 });
             })
-            .catch(err => printAWSError(err));
+            .catch(err => {
+                res.status(400);
+                res.json({
+                    ...err,
+                    token: null
+                });
+            });
     });
 
     app.listen(port, function () {
