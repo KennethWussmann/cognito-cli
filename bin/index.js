@@ -181,28 +181,33 @@ async function auth(stage, cliToken) {
     });
     const user = await Auth.signIn(stage.username, stage.password)
     if (user.challengeName === 'SOFTWARE_TOKEN_MFA') {
-        let token = cliToken;
         if (cliToken == null) {
-            if (!stage.otpSecret) {
-                token = await promptMfaToken();
+            if (stage.otpSecret) {
+                await Auth.confirmSignIn(user, otplib.totp.generate(stage.otpSecret), user.challengeName);
             } else {
-                token = otplib.totp.generate(stage.otpSecret);
+                await Auth.confirmSignIn(user, await promptMfaToken(), user.challengeName);
             }
+        } else {
+            await Auth.confirmSignIn(user, cliToken, user.challengeName);
         }
-        await Auth.confirmSignIn(user, token, user.challengeName);
     }
     const response = await Auth.currentSession();
     return response.getIdToken().getJwtToken();
 }
 
-async function promptMfaToken() {
-    return await inquirer
-        .prompt({
-            type: "input",
-            name: "mfaToken",
-            message: "Please enter MFA token",
-            choices: getAvailablePoolNames()
-        }).mfaToken;
+function promptMfaToken() {
+    return new Promise((resolve, reject) => {
+        inquirer
+            .prompt({
+                type: "input",
+                name: "mfaToken",
+                message: "Please enter MFA token:"
+            }).then(answers => {
+                resolve(answers.mfaToken)
+            }).catch(err => {
+                reject(err)
+            });
+    });
 }
 
 function webserver(port) {
