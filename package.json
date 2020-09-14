@@ -4,11 +4,12 @@
   "description": "CLI tool to generate JWT from AWS Congito credentials",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "install": "node index.js"
+    "start": "./bin/index.js",
+    "install": "./bin/index.js"
   },
   "bin": {
-    "cognito": "./index.js"
+    "cogcli": "./bin/index.js",
+    "cognito": "./bin/index.js"
   },
   "author": "Kenneth Wussmann",
   "license": "MIT",
