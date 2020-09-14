@@ -247,6 +247,15 @@ function webserver(port) {
     });
 
     app.listen(port, function () {
-        console.log(`Started local webserver: http://localhost:${port}/{pool}/{stage}`);
+        console.log('Available pools and stages:')
+        getAvailablePoolNames().forEach(pool => {
+            console.log('➜', pool)
+            getAvailableStages(pool).forEach(stageName => {
+                const stage = getStage(pool, stageName)
+                console.log('  ↳', stageName, stage.otpSecret ? '(automatic MFA handling)' : '')
+            });
+        })
+        console.log(`\nStarted local webserver: http://localhost:${port}/{pool}/{stage}`);
+        console.log(`Add '?token=123456' to specify MFA token if needed.\n`);
     });
 }
