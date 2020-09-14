@@ -7,6 +7,7 @@ const inquirer = require("inquirer");
 const express = require('express');
 const otplib = require('otplib');
 const Auth = require("aws-amplify").Auth;
+const packageJson = require('../package.json');
 
 const configFolderPath = process.env.HOME + "/.cognito-cli/";
 const configFileName = "config.json";
@@ -61,7 +62,7 @@ function initEnvironment() {
 async function parseCliArguments() {
     var cli = require("commander");
 
-    cli.version("1.0.0")
+    cli.version(packageJson.version)
         .option(`-p, --pool [name]`, "Use the pool by [name]")
         .option(`-s, --stage [stage]`, "Use the [stage]")
         .option(`-c, --copy`, "Copy the token directly to clipboard")
