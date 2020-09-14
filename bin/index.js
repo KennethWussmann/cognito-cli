@@ -5,7 +5,7 @@ const fs = require("fs");
 const ncp = require("copy-paste");
 const inquirer = require("inquirer");
 const express = require('express');
-const otplib = require('otplib');
+const OTPAuth = require('otpauth');
 const Auth = require("aws-amplify").Auth;
 const packageJson = require('../package.json');
 
@@ -60,7 +60,7 @@ function initEnvironment() {
 }
 
 async function parseCliArguments() {
-    var cli = require("commander");
+    const cli = require("commander");
 
     cli.version(packageJson.version)
         .option(`-p, --pool [name]`, "Use the pool by [name]")
@@ -183,7 +183,7 @@ async function auth(stage, cliToken) {
     if (user.challengeName === 'SOFTWARE_TOKEN_MFA') {
         if (cliToken == null) {
             if (stage.otpSecret) {
-                await Auth.confirmSignIn(user, otplib.totp.generate(stage.otpSecret), user.challengeName);
+                await Auth.confirmSignIn(user, generateTotp(stage.otpSecret), user.challengeName);
             } else {
                 await Auth.confirmSignIn(user, await promptMfaToken(), user.challengeName);
             }
@@ -193,6 +193,15 @@ async function auth(stage, cliToken) {
     }
     const response = await Auth.currentSession();
     return response.getIdToken().getJwtToken();
+}
+
+function generateTotp(secret) {
+    return new OTPAuth.TOTP({
+        algorithm: 'SHA1',
+        digits: 6,
+        period: 30,
+        secret: OTPAuth.Secret.fromB32(secret),
+    }).generate();
 }
 
 function promptMfaToken() {
