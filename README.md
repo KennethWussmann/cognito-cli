@@ -1,14 +1,18 @@
 # :guardsman: cognito-cli
+
 Small CLI tool to obtain a JWT from a Cognito userpools. Supports multiple userpools ordered by stages and MFA.
 
 ## :rocket: Usage
-* Install globally `npm install -g cogcli`
-* New config will be created at `~/.cognito-cli/config.json`
-* Provide credentials in the config file
-* Run the global command `cognito`
+
+- Install globally `npm install -g cogcli`
+- New config will be created at `~/.cognito-cli/config.json`
+- Provide credentials in the config file
+- Run the global command `cognito`
 
 ## :books: Configuration
+
 This is the example `~/.cognito-cli/config.json`:
+
 ```JSON
 {
     "pools": [
@@ -25,7 +29,9 @@ This is the example `~/.cognito-cli/config.json`:
     ]
 }
 ```
+
 You can add as many `pools` with `stages`. Example:
+
 ```JSON
 {
     "pools": [
@@ -53,22 +59,27 @@ You can add as many `pools` with `stages`. Example:
 ```
 
 ## :arrows_clockwise: MFA Support
-When the Cognito user requires MFA login:
-* You can supply the OTP secret which can be used to generate a token in the config via `otpSecret`
-* If no `otpSecret` present you will be prompted to enter the token manually
-* You can also use `--token 123456` to supply the token directly 
-* When using the local webserver you can use the `?token=123456` query parameter with your request
 
-> :bangbang:️ Notice that this tool is for development purposes only. 
+When the Cognito user requires MFA login:
+
+- You can supply the OTP secret which can be used to generate a token in the config via `otpSecret`
+- If no `otpSecret` present you will be prompted to enter the token manually
+- You can also use `--token 123456` to supply the token directly
+- When using the local webserver you can use the `?token=123456` query parameter with your request
+
+> :bangbang:️ Notice that this tool is for development purposes only.
 > Never hold confidential credentials together with MFA secrets in a plain-text file.
 
 ## :man_technologist: CLI
+
 You can run the global command `cognito`.
 
 ### Running without arguments
+
 When you run just `cognito` without args you will be prompted with all possible pools & stages:
 
 **Shows list of applications configured**
+
 ```
 ? What pool type would you like to use? (Use arrow keys)
 ❯ Application 1
@@ -76,6 +87,7 @@ When you run just `cognito` without args you will be prompted with all possible 
 ```
 
 **Shows available stages for this application**
+
 ```
 ? What pool type would you like to use? Application 1
 ? And for what stage?
@@ -84,13 +96,16 @@ When you run just `cognito` without args you will be prompted with all possible 
   prd
 ```
 
-**Copies the obtained JWT to your clipboard (macOS, Linux & Windows)** 
+**Copies the obtained JWT to your clipboard (macOS, Linux & Windows)**
+
 ```
 Copied JWT for Application 1 INT to clipboard!
 ```
 
 ### Running with arguments
+
 This CLI tool also allows the following arguments:
+
 ```
 Usage: cognito [options]
 
@@ -105,16 +120,20 @@ Options:
 ```
 
 ## :globe_with_meridians: Local webserver
+
 Using `cognito -S` will start a local webserver (default on port 8080) that can be used to retrieve a JWT token for pool & stage.
 The webserver has the following endpoint:
-* `GET /{pool}/{stage}` - Get a fresh JWT token (no caching!)
-* `GET /{pool}/{stage}?token=123456` - Get a fresh JWT token with MFA token if required
+
+- `GET /{pool}/{stage}` - Get a fresh JWT token (no caching!)
+- `GET /{pool}/{stage}?token=123456` - Get a fresh JWT token with MFA token if required
 
 ### Examples
+
 ```
 $ curl -X GET http://localhost:8080/example/dev
 {
   "token": "eyJra..."
 }
 ```
+
 That's useful for example in REST clients like Insomnia or Postman to chain requests: Get Token -> Post something.
