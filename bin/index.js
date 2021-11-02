@@ -49,6 +49,9 @@ function initEnvironment() {
       configFolderPath + configFileName,
       JSON.stringify(
         {
+          settings: {
+            port: 8080,
+          },
           pools: [
             {
               name: "Example",
@@ -64,7 +67,7 @@ function initEnvironment() {
           ],
         },
         null,
-        4
+        2
       )
     );
     console.log(
@@ -270,7 +273,7 @@ function promptMfaToken() {
 
 function webserver(port) {
   if (port === true) {
-    port = 8080;
+    port = config.settings?.port ?? 8080;
   }
 
   const app = express();
