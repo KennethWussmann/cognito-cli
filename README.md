@@ -15,6 +15,9 @@ This is the example `~/.cognito-cli/config.json`:
 
 ```JSON
 {
+    "settings": {
+      "port": 8080
+    },
     "pools": [
         {
             "name": "Example",
@@ -30,10 +33,15 @@ This is the example `~/.cognito-cli/config.json`:
 }
 ```
 
+With `port` the default port for the local webserver can be globally adjusted.
+
 You can add as many `pools` with `stages`. Example:
 
 ```JSON
 {
+    "settings": {
+      "port": 8080
+    },
     "pools": [
         {
             "name": "Application 1",
