@@ -221,7 +221,8 @@ async function auth(stage, cliToken) {
     userPoolId: stage.poolId,
     userPoolWebClientId: stage.clientId,
   });
-  const user = await Auth.signIn(stage.username, stage.password);
+  const password = await getOrPromptPassword(stage);
+  const user = await Auth.signIn(stage.username, password);
   if (user.challengeName === "SOFTWARE_TOKEN_MFA") {
     if (cliToken == null) {
       if (stage.otpSecret) {
@@ -252,6 +253,18 @@ function generateTotp(secret) {
     period: 30,
     secret: OTPAuth.Secret.fromBase32(secret),
   }).generate();
+}
+
+async function getOrPromptPassword(stage) {
+  if (stage.password) {
+    return stage.password;
+  }
+  const response = await inquirer.prompt({
+    type: "password",
+    name: "password",
+    message: "Please enter password:",
+  });
+  return response.password;
 }
 
 function promptMfaToken() {

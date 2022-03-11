@@ -5,9 +5,9 @@ Small CLI tool to obtain a JWT from a Cognito userpools. Supports multiple userp
 ## :rocket: Usage
 
 - Install globally `npm install -g cogcli`
+- Run the global command `cognito` or `cogcli`
 - New config will be created at `~/.cognito-cli/config.json`
 - Provide credentials in the config file
-- Run the global command `cognito`
 
 ## :books: Configuration
 
@@ -25,13 +25,15 @@ This is the example `~/.cognito-cli/config.json`:
                 "poolId": "eu-west-1_1234567",
                 "clientId": "abc123456",
                 "username": "user",
-                "password": "passwd",
+                "password": "OPTIONAL_PASSWORD",
                 "otpSecret": "OPTIONAL_OTPSECRET"
             }
         }
     ]
 }
 ```
+
+> The password and otpSecret are optional. You'll be prompted for them if not added to the config.
 
 With `port` the default port for the local webserver can be globally adjusted.
 
@@ -49,7 +51,7 @@ You can add as many `pools` with `stages`. Example:
                 "poolId": "eu-west-1_1234567",
                 "clientId": "abc123456",
                 "username": "user",
-                "password": "passwd",
+                "password": "OPTIONAL_PASSWORD",
                 "otpSecret": "OPTIONAL_OTPSECRET"
             }
         },
@@ -59,7 +61,7 @@ You can add as many `pools` with `stages`. Example:
                 "poolId": "eu-west-1_1234567",
                 "clientId": "abc123456",
                 "username": "user",
-                "password": "passwd"
+                "password": "OPTIONAL_PASSWORD"
             }
         }
     ]
