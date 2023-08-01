@@ -26,6 +26,6 @@
     "otpauth": "^7.1.0"
   },
   "devDependencies": {
-    "prettier": "^2.5.1"
+    "prettier": "^3.0.0"
   }
 }
